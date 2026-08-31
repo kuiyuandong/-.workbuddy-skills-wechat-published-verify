@@ -9,11 +9,14 @@
 - CDP 连接**品牌无关**（Edge / Chrome 同属 Chromium），`connectOverCDP` 都能连。
 - 必须**带 `--remote-debugging-port` 启动浏览器**，且先杀干净旧进程（建议加 `--user-data-dir` 强制新实例）。
 - AI 侧常连不到用户桌面端口 → 直接转**截图核对**最稳。
-- 每次运行都需**手动授权**：微信后台会弹授权确认页，须人工点"同意 / 确认 / 扫码"才能继续，故本 skill **不能全自动无人值守**，每次都要人在场过一遍授权。
+- 每次运行都有三道必须人工过的"授权门"（AI 无法代点，故本 skill **不能无人值守**）：
+  1. **微信后台登录/CDP 授权**：后台会弹授权确认页，须人工点"同意 / 确认 / 扫码"。
+  2. **WorkBuddy 危险操作授权**：AI 调 Bash/网络等工具时弹权限确认卡，须手动点"同意"。
+  3. **Git 凭据助手选择器（CredentialHelperSelector）**：`git push` 时 Git Credential Manager 弹 `Select a credential helper`，须手动选 `wincred` 并勾 `Always use this from now on` 再点 `Select`。（见 `assets/git-credential-helper-selector.png`）
 - 历史快照有**时间边界**，覆盖不到之后新文，别拿旧快照核最新。
-- 每次运行都有两道必须人工过的"授权门"：① 微信后台登录/CDP 授权；② WorkBuddy 危险操作授权（AI 调用 Bash/网络等工具时弹出的权限确认）。AI 无法代点，故本 skill **不能无人值守运行**。
 
 ![WorkBuddy 运行界面示意（危险操作授权确认以卡片形式出现在对话区）](assets/workbuddy-authorization-screenshot.png)
+![Git Credential Helper 选择器（git push 时弹出，须手动选 wincred 并勾 Always use this）](assets/git-credential-helper-selector.png)
 - 别把"CDP 读 DOM"和"剪贴板复制丢格式"混为一谈。
 
 ## 用法

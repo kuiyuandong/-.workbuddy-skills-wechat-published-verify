@@ -15,11 +15,10 @@ description: 核对公众号"文章索引/清单"与微信后台「发表记录�
 2. **必须带参启动**：普通双击打开的浏览器**不会**监听调试端口。必须用 `msedge --remote-debugging-port=9222` 之类带参启动。
 3. **必须先杀干净旧进程**：Edge 关窗口后仍驻留后台 `msedge.exe`；不杀干净，新命令只是又开了个窗口、参数被旧实例忽略。加 `--user-data-dir` 强制开全新实例最稳。
 4. **AI 侧可能连不到你桌面的端口**：AI 的 Bash/Node 常跑在隔离网络命名空间，即便你本地端口开了，AI 侧 `curl 127.0.0.1:PORT` 仍可能是 closed。此时直接转"截图核对"，别死磕端口。
-5. **每次运行都有两道必须人工过的"授权门"**：
-   - **微信后台登录/CDP 授权**：登录 `mp.weixin.qq.com` 时可能需要管理员扫码或点确认；CDP 抓取时也可能弹出授权确认页。
-   - **WorkBuddy 危险操作授权**：AI 调用 Bash（沙箱外网络请求、本地进程操作、GitHub 推送等）时，WorkBuddy 会弹出权限确认页/卡，每次都要你手动点"同意"。
-   - **结论**：AI 无法代点任何一道授权，本 skill **不能无人值守运行**，每次都要你坐在电脑前逐步确认。
-5. **每次运行都需手动授权（人在场）**：连接或抓取过程中，微信后台会弹出**授权确认页**（如扫码登录的二次验证、或"是否允许读取数据"类的确认弹窗），必须由你**本人在浏览器里手动点"同意 / 确认 / 扫码"**才能继续。AI 无法代点——这是微信的安全机制，无法跳过，也是本 skill **不能全自动无人值守**的根本原因：每次跑都要人在场过一遍授权。
+5. **每次运行都有三道必须人工过的"授权门"**（AI 无法代点任何一道，故本 skill **不能无人值守运行**，每次都要你坐在电脑前逐步确认）：
+   - **① 微信后台登录/CDP 授权**：登录 `mp.weixin.qq.com` 时可能需要管理员扫码或点确认；CDP 抓取时也可能弹出授权确认页。
+   - **② WorkBuddy 危险操作授权**：AI 调用 Bash（沙箱外网络请求、本地进程操作等）时，WorkBuddy 会弹出权限确认页/卡，每次都要你手动点"同意"。（见 `assets/workbuddy-authorization-screenshot.png`）
+   - **③ Git 凭据助手选择器（CredentialHelperSelector）**：AI 执行 `git push` 等 HTTPS 操作时，Git Credential Manager 可能弹出 `Select a credential helper` 窗口，让你选 `no helper / manager / wincred` 并决定是否"Always use this from now on"。**必须手动点选**：建议选 `wincred`（与 Windows 凭据管理器中的 `git:https://github.com` 条目匹配最稳），勾上 `Always use this from now on` 再点 `Select`。选错或不点，push 会卡住或失败。（见 `assets/git-credential-helper-selector.png`）
 
 ## 标准流程
 
@@ -51,6 +50,7 @@ description: 核对公众号"文章索引/清单"与微信后台「发表记录�
 | 用户本地能访问 JSON，AI 侧 closed | 沙箱网络隔离 | 转截图核对 |
 | catalog 搜不到最新篇 | 快照陈旧 | 重抓最新 / 截图核对 |
 | 端口已开却抓不到数据 | 授权页弹出后未手动确认，脚本在等待 | 回浏览器查是否有待确认的授权页，手动点"同意" |
+| git push 卡住 / 弹出 Select a credential helper | Git 未指定默认凭据助手 | 手动选 `wincred` 并勾 `Always use this from now on` 后点 `Select`；或命令显式加 `-c credential.helper=wincred` |
 
 ## 关键坑（踩过才懂）
 - **别混淆两件事**：① CDP 读 DOM（品牌无关，稳）；② 剪贴板复制 HTML 进微信（Edge 有丢样式 bug，必须 Chrome）。前者用于"核对"，后者用于"发布"，互不影响。
